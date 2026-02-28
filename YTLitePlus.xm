@@ -685,9 +685,9 @@ BOOL isTabSelected = NO;
         feedbackGenerator = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
     });
     // Get objects used to seek nicely in the video player
-    static YTMainAppVideoPlayerOverlayViewController *mainVideoPlayerController = (YTMainAppVideoPlayerOverlayViewController *)self.childViewControllers.firstObject;
-    static YTPlayerBarController *playerBarController = mainVideoPlayerController.playerBarController;
-    static YTInlinePlayerBarContainerView *playerBar = playerBarController.playerBar;
+    YTMainAppVideoPlayerOverlayViewController *mainVideoPlayerController = (YTMainAppVideoPlayerOverlayViewController *)self.childViewControllers.firstObject;
+    YTPlayerBarController *playerBarController = mainVideoPlayerController.playerBarController;
+    YTInlinePlayerBarContainerView *playerBar = playerBarController.playerBar;
 
 /***** Helper functions for adjusting player state *****/
     // Helper function to adjust brightness
@@ -1058,7 +1058,7 @@ NSInteger pageStyle = 0;
 
     if (settingsViewController) {
         // Present the video picker
-        UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:@[(NSString *)UTTypeMovie.identifier, (NSString *)UTTypeVideo.identifier] inMode:UIDocumentPickerModeImport];
+        UIDocumentPickerViewController *documentPicker = [[UIDocumentPickerViewController alloc] initForOpeningContentTypes:@[UTTypeMovie, UTTypeVideo] asCopy:YES];
         documentPicker.delegate = (id<UIDocumentPickerDelegate>)self;
         documentPicker.allowsMultipleSelection = NO;
         [settingsViewController presentViewController:documentPicker animated:YES completion:nil];
@@ -1078,7 +1078,19 @@ NSInteger pageStyle = 0;
         playerViewController.player = player;
         
         // Get the root view controller
-        UIViewController *presentingViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
+        UIViewController *presentingViewController = nil;
+        for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                for (UIWindow *window in windowScene.windows) {
+                    if (window.isKeyWindow) {
+                        presentingViewController = window.rootViewController;
+                        break;
+                    }
+                }
+            }
+            if (presentingViewController) break;
+        }
         // Present the Video Player
         if (presentingViewController) {
             [presentingViewController presentViewController:playerViewController animated:YES completion:^{
@@ -1185,7 +1197,14 @@ NSInteger pageStyle = 0;
 %end
 %hook UIKBTree
 - (long long)nativeIdiom {
-    if ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationPortrait) {
+    UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+    for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            orientation = ((UIWindowScene *)scene).interfaceOrientation;
+            break;
+        }
+    }
+    if (orientation == UIInterfaceOrientationPortrait || orientation == UIInterfaceOrientationPortraitUpsideDown) {
         return NO;
     } else {
         return YES;
@@ -1194,7 +1213,14 @@ NSInteger pageStyle = 0;
 %end
 %hook UIKBRenderer
 - (long long)assetIdiom {
-    if ([UIApplication sharedApplication].statusBarOrientation == UIInterfaceOrientationPortrait) {
+    UIInterfaceOrientation orientation = UIInterfaceOrientationUnknown;
+    for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            orientation = ((UIWindowScene *)scene).interfaceOrientation;
+            break;
+        }
+    }
+    if (orientation == UIInterfaceOrientationPortrait || orientation == UIInterfaceOrientationPortraitUpsideDown) {
         return NO;
     } else {
         return YES;
