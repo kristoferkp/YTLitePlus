@@ -9,7 +9,6 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <AVFoundation/AVFoundation.h>
 #import <AVKit/AVKit.h>         // For AVPlayer and AVPlayerViewController
-#import <MobileCoreServices/MobileCoreServices.h> // For kUTTypeMovie and kUTTypeVideo
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #import "Tweaks/YouTubeHeader/YTAppDelegate.h"
